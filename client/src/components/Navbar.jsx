@@ -1,6 +1,8 @@
-import { Search, Bell, Menu } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { Search, Bell, Menu, Timer } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useFocus } from "../context/FocusContext";
+import { fmtClock } from "../lib/focusStats";
 
 const titles = {
   "/": "Overview", "/tasks": "My tasks", "/subjects": "Subjects",
@@ -15,6 +17,7 @@ function crumbs(path) {
 
 export default function Navbar({ onMenu }) {
   const { user } = useAuth();
+  const { running, remaining } = useFocus();
   const { pathname } = useLocation();
   const trail = crumbs(pathname);
   const initials = user?.name?.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
@@ -37,6 +40,11 @@ export default function Navbar({ onMenu }) {
         <div className="hidden w-72 items-center gap-2 rounded-xl bg-slate-100 px-3 py-2 text-sm text-slate-400 lg:flex">
           <Search size={16} /> Search tasks, notes, subjects...
         </div>
+        {running && pathname !== "/" && (
+          <Link to="/" className="flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium tabular-nums text-brand">
+            <Timer size={12} /> {fmtClock(remaining)}
+          </Link>
+        )}
         <Bell size={18} className="text-slate-400" />
         <div className="grid h-8 w-8 place-items-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700">
           {initials}

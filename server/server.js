@@ -6,11 +6,12 @@ import authRoutes from "./routes/authRoutes.js";
 import subjectRoutes from "./routes/subjectRoutes.js";
 import unitRoutes from "./routes/unitRoutes.js";
 import taskRoutes from "./routes/taskRoutes.js";
-
+import focusRoutes from "./routes/focusRoutes.js";
 const app = express();
 
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173" }));
 app.use(express.json());
+app.use("/api/focus", focusRoutes);
 
 app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 app.use("/api/auth", authRoutes);

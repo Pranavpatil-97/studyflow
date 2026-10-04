@@ -6,14 +6,18 @@ import { useData } from "../context/DataContext";
 import TaskRow from "../components/TaskRow";
 import SyllabusCard from "../components/SyllabusCard";
 import UpcomingList from "../components/UpcomingList";
+import FocusTimer from "../components/FocusTimer";
+import WeeklyChart from "../components/WeeklyChart";
+import { useFocus } from "../context/FocusContext";
+import { weekStats, fmtMinutes } from "../lib/focusStats";
 import { toDateStr } from "../lib/dates";
 
 const TABS = [["all", "All tasks"], ["todo", "To do"], ["done", "Completed"]];
-const fmt = (m) => (m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`);
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { subjects, tasks, loading } = useData();
+  const { sessions } = useFocus();
   const navigate = useNavigate();
   const [tab, setTab] = useState("all");
 
@@ -22,7 +26,8 @@ export default function Dashboard() {
   const done = todays.filter((t) => t.completed);
   const left = todays.length - done.length;
   const pct = todays.length ? Math.round((done.length / todays.length) * 100) : 0;
-  const minutes = done.reduce((sum, t) => sum + t.minutes, 0);
+  const stats = weekStats(sessions);
+  const diff = stats.todayMinutes - stats.yesterdayMinutes;
   const shown = todays.filter((t) => tab === "all" || (tab === "todo" ? !t.completed : t.completed));
   const upcoming = tasks.filter((t) => !t.completed && t.dueDate > today).slice(0, 4);
   const overdue = tasks.filter((t) => !t.completed && t.dueDate < today).length;
@@ -72,7 +77,12 @@ export default function Dashboard() {
             <div><p className="text-3xl font-light">{pct}%</p><p className="text-xs text-slate-400">complete</p></div>
             <div>
               <p className="flex items-center gap-1 text-xs text-slate-400"><Clock size={12} /> Study time</p>
-              <p className="text-xl font-light">{fmt(minutes)}</p>
+              <p className="text-xl font-light">{fmtMinutes(stats.todayMinutes)}</p>
+              {diff !== 0 && (
+                <p className={`text-[10px] ${diff > 0 ? "text-emerald-600" : "text-orange-500"}`}>
+                  {diff > 0 ? "+" : "-"}{fmtMinutes(Math.abs(diff))} from yesterday
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -134,11 +144,13 @@ export default function Dashboard() {
           </section>
         </div>
 
-        <aside>
+        <aside className="space-y-6">
+          <FocusTimer sessionsToday={stats.sessionsToday} />
           <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-100">
             <h2 className="mb-4 text-lg font-light">Coming up next</h2>
             <UpcomingList tasks={upcoming} />
           </section>
+          <WeeklyChart stats={stats} />
         </aside>
       </div>
     </div>
