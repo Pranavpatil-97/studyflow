@@ -1,12 +1,13 @@
 import { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { Layers } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
   const { user, login, register } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState("login");
+  const [params] = useSearchParams();
+const [mode, setMode] = useState(params.get("mode") === "register" ? "register" : "login");
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
